@@ -43,7 +43,7 @@ To address this issue, we corrected the annotations by shifting all bounding box
 
 
 
- **SIRSTD:** In the original [SIRSTD](https://github.com/aurora-sea/SIRSTD) dataset, all images are stored in a single directory without sequence organization. To facilitate training and evaluation, we provide a restructured version where the images are grouped into sequences. The download link is available: 
+ **SIRSTD:** In the original [SIRSTD](https://github.com/aurora-sea/SIRSTD) dataset, all images are stored in a single directory without sequence organization. To facilitate training and evaluation, we provide a restructured version where the images are grouped into sequences. In addition, we have converted the annotations to the COCO format (`coco_train_re_IRDST.txt` and `coco_val_re_IRDST.txt`). Download link for the reorganized dataset:
 
 ## 2. Pre-trained source model
 Follow the DFAR training pipeline to obtain the source-domain model weights on the three datasets. We also provide the pre-trained weights in `./model_data/oracle/.`
