@@ -55,7 +55,7 @@ Taking **DAUB_to_SIRSTD** as an example, you can use the following command:
 CUDA_VISIBLE_DEVICES=0 nohup python -u  DAUB_to_SIRSTD.py >  DAUB_to_SIRSTD.out &
 ```
 
-For other transfer scenarios, you can proceed in a similar manner after modifying the corresponding file paths.
+For other transfer scenarios, you can proceed in a similar manner after modifying the corresponding file paths (source_train_annotation_path, target_train_annotation_path, target_val_annotation_path, and model_path).
 ## 4. Test
 We utilize 1 NVIDIA GeForce RTX 4090D GPU for testing. For the **DAUB_to_SIRSTD**：
 ```bash
