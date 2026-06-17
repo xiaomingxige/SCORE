@@ -43,7 +43,7 @@ To address this issue, we corrected the annotations by shifting all bounding box
 
 
 
- **SIRSTD:** In the original [SIRSTD](https://github.com/aurora-sea/SIRSTD) dataset, all images are stored in a single directory without sequence organization. To facilitate training and evaluation, we provide a restructured version where the images are grouped into sequences. In addition, we have converted the annotations to the COCO format (`coco_train_re_IRDST.txt` and `coco_val_re_IRDST.txt`). Download link for the reorganized dataset:
+ **SIRSTD:** In the original [SIRSTD](https://github.com/aurora-sea/SIRSTD) dataset, all images are stored in a single directory without sequence organization. To facilitate training and evaluation, we provide a restructured version where the images are grouped into sequences. In addition, we have converted the annotations to the COCO format (`coco_train_SIRSTD.txt` and `coco_val_SIRSTD.txt`). Download link for the reorganized dataset:
 
 ## 2. Pre-trained source model
 Follow the DFAR training pipeline to obtain the source-domain model weights on the three datasets. We also provide the pre-trained weights in `./model_data/oracle/.`
@@ -52,7 +52,7 @@ Follow the DFAR training pipeline to obtain the source-domain model weights on t
 ## 3. Train
 Taking **DAUB_to_SIRSTD** as an example, you can use the following command:
 ```bash
-CUDA_VISIBLE_DEVICES=0 nohup python -u  DAUB_to_IRDST_re.py >  DAUB_to_IRDST_re.out &
+CUDA_VISIBLE_DEVICES=0 nohup python -u  DAUB_to_SIRSTD.py >  DAUB_to_SIRSTD.out &
 ```
 
 For other transfer scenarios, you can proceed in a similar manner after modifying the corresponding file paths.
@@ -64,7 +64,7 @@ CUDA_VISIBLE_DEVICES=0 python vid_DAUB_to_SIRSTD.py
 ## 5. Visualization
 For the **DAUB_to_SIRSTD**：
 ```bash
-python predict_ITSDT_to_IRDST.py
+python predict_DAUB_to_SIRSTD.py
 ```
 ## Citation
 If you find this project is useful for your research, please cite:
