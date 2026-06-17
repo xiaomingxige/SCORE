@@ -43,15 +43,15 @@ if __name__ == "__main__":
     CUDA_VISIBLE_DEVICES=0 nohup python -u  DAUB_to_IRDST_re.py >  DAUB_to_IRDST_re.out &
     """
     ################### Source domain data
-    source_train_annotation_path = '/home/luodengyan/tmp/master-红外目标检测/视频/数据集/DAUB_csj/DAUB/my_coco_train_DAUB.txt'
+    source_train_annotation_path = './coco_train_DAUB.txt'
 
 
     ################### target domain data
-    target_train_annotation_path = '/home/luodengyan/tmp/master-红外目标检测/视频/自己找的数据集/SIRSTD数据集信息/my_coco_train_SIRSTD.txt' 
-    target_val_annotation_path = '/home/luodengyan/tmp/master-红外目标检测/视频/自己找的数据集/SIRSTD数据集信息/my_coco_val_SIRSTD.txt'
+    target_train_annotation_path = './coco_train_SIRSTD.txt' 
+    target_val_annotation_path = './coco_val_SIRSTD.txt'
     
     ################### Source Domain Model Weights
-    model_path        = '/data/luodengyan/code/我的红外/视频/4加载源模型训练/oracle/DFAR-main/logs_DAUB/2025_06_28_09_41_45/ep007-loss1.953-val_loss1.955.pth' 
+    model_path        = './model_data/oracle/DFAR_DAUB_ep007-loss1.953-val_loss1.955.pth' 
 
 
     print('source_train_annotation_path: ', source_train_annotation_path)
