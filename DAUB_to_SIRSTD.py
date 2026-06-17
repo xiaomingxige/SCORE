@@ -37,11 +37,6 @@ class WeightEMA(object):
             p.data.add_(src_p.data * one_minus_alpha)
 
 if __name__ == "__main__":
-    print('PID: ', os.getpid())
-    """
-    CUDA_VISIBLE_DEVICES=0 python  DAUB_to_IRDST_re.py
-    CUDA_VISIBLE_DEVICES=0 nohup python -u  DAUB_to_IRDST_re.py >  DAUB_to_IRDST_re.out &
-    """
     ################### Source domain data
     source_train_annotation_path = './coco_train_DAUB.txt'
 
