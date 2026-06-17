@@ -14,17 +14,9 @@ from nets.yolo_training import (ModelEMA, YOLOLoss, get_lr_scheduler, set_optimi
 from utils.callbacks import EvalCallback, LossHistory
 from utils.dataloader_for_DAUB import target_seqDataset, dataset_collate, source_seqDataset, target_dataset_collate
 from utils.utils import get_classes, show_config
-# from utils.utils_fit import fit_one_epoch
 from utils.uda_utils_fit import fit_one_epoch
 
 
-'''
-训练自己的目标检测模型一定需要注意以下几点：
-1、训练前仔细检查自己的格式是否满足要求，该库要求数据集格式为VOC格式，需要准备好的内容有输入图片和标签
-   输入图片无需固定大小，传入训练前会自动进行resize。
-   
-3、训练好的权值文件保存在logs文件夹中，每个训练世代（Epoch）包含若干训练步长（Step），每个训练步长（Step）进行一次梯度下降。
-'''
 
 class WeightEMA(object):
     """
@@ -47,24 +39,19 @@ class WeightEMA(object):
 if __name__ == "__main__":
     print('PID: ', os.getpid())
     """
-    CUDA_VISIBLE_DEVICES=0 python  DAUB_to_SIRSTD.py
-    CUDA_VISIBLE_DEVICES=1 nohup python -u  DAUB_to_SIRSTD.py >  DAUB_to_SIRSTD.out &
+    CUDA_VISIBLE_DEVICES=0 python  DAUB_to_IRDST_re.py
+    CUDA_VISIBLE_DEVICES=0 nohup python -u  DAUB_to_IRDST_re.py >  DAUB_to_IRDST_re.out &
     """
-    ###################源域数据, 利用标签
+    ################### Source domain data
     source_train_annotation_path = '/home/luodengyan/tmp/master-红外目标检测/视频/数据集/DAUB_csj/DAUB/my_coco_train_DAUB.txt'
 
 
-    ###################目标数据, 不利用标签
+    ################### target domain data
     target_train_annotation_path = '/home/luodengyan/tmp/master-红外目标检测/视频/自己找的数据集/SIRSTD数据集信息/my_coco_train_SIRSTD.txt' 
     target_val_annotation_path = '/home/luodengyan/tmp/master-红外目标检测/视频/自己找的数据集/SIRSTD数据集信息/my_coco_val_SIRSTD.txt'
     
-    
-    
-    
-
-    model_path        = '/data/luodengyan/code/我的红外/视频/4加载源模型训练/oracle/DFAR-main/logs_DAUB/2025_06_28_09_41_45/ep007-loss1.953-val_loss1.955.pth' # 0.9575 Precision: 0.9813, Recall: 0.9814, F1: 0.9814
-    # model_path        = ''
-
+    ################### Source Domain Model Weights
+    model_path        = '/data/luodengyan/code/我的红外/视频/4加载源模型训练/oracle/DFAR-main/logs_DAUB/2025_06_28_09_41_45/ep007-loss1.953-val_loss1.955.pth' 
 
 
     print('source_train_annotation_path: ', source_train_annotation_path)
@@ -212,7 +199,6 @@ if __name__ == "__main__":
     eval_flag           = True
     eval_period         = 1
 
-    # num_workers         = 1
     num_workers         = Unfreeze_batch_size // 2
 
     ngpus_per_node  = torch.cuda.device_count()
@@ -232,7 +218,7 @@ if __name__ == "__main__":
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)  # 新加
+    torch.cuda.manual_seed(seed)  
     torch.cuda.manual_seed_all(seed)
     # torch.backends.cudnn.deterministic = True # speed up
     torch.backends.cudnn.benchmark = False  # if reproduce
@@ -242,30 +228,10 @@ if __name__ == "__main__":
     #----------------------------------------------------#
     class_names, num_classes = get_classes(classes_path)  # ['target'] 1
     #------------------------------------------------------#
-    model = Network(num_classes=1, num_frame=5)  # 学生模型
+    model = Network(num_classes=1, num_frame=5)  # student model
     weights_init(model)
 
-
-    model_teacher = Network(num_classes=1, num_frame=5)  # 教师模型
-
-
-
-
-    # bs = 2
-    # target_images = torch.randn(bs, 3, 5, 512, 512).cuda()  
-    # # a = torch.randn(bs, 3, 5, 544, 544).cuda(1) 
-    # # out = net(a) 
-
-    # source_image = torch.rand(bs, 3, 512, 512).cuda()
-    # raw_source_box = torch.rand(bs, 1, 4).cuda()
-
-    # model = model.cuda()
-    # from thop import profile
-    # flops, params = profile(model, inputs=(source_image, raw_source_box, target_images, ))
-    # print(flops/(10**9), params/(10**6))    # 155.367911296 19.99545
-    # exit(1)
-
-
+    model_teacher = Network(num_classes=1, num_frame=5)  # teacher model
 
     if model_path != '':
         if local_rank == 0:
@@ -284,7 +250,6 @@ if __name__ == "__main__":
                 no_load_key.append(k)
         model_dict.update(temp_dict)
         model.load_state_dict(model_dict)
-
 
         #------------------------------------------------------#
         #   显示没有匹配上的Key
@@ -309,7 +274,6 @@ if __name__ == "__main__":
         scaler = GradScaler()
     else:
         scaler = None
-    # model_train     = model.train()
     #----------------------------#
     #   多卡同步Bn
     #----------------------------#
@@ -319,22 +283,9 @@ if __name__ == "__main__":
         print("Sync_bn is not support in one gpu or not distributed.")
 
 
-
-    # 将学生模型的权重赋值给教师模型
     model_teacher.load_state_dict(model.state_dict())
-
-    # # 打印权重以验证是否一致
-    # print("Student Model Weights:")
-    # for name, param in model.named_parameters():
-    #     print(f"{name}: {param[:2]}")  # 打印部分权重
-
-    # print("\nTeacher Model Weights:")
-    # for name, param in model_teacher.named_parameters():
-    #     print(f"{name}: {param[:2]}")  # 打印部分权重
-
-
     if Cuda:
-        if distributed:  # 默认False
+        if distributed:  
             #----------------------------#
             #   多卡平行运行
             #----------------------------#
@@ -346,9 +297,6 @@ if __name__ == "__main__":
             model_train = model_train.cuda()
 
             model_teacher = model_teacher.cuda()
-    
-
-
     #----------------------------#
     #   权值平滑
     #----------------------------#
@@ -362,9 +310,9 @@ if __name__ == "__main__":
         target_train_lines   = f.readlines()
     with open(target_val_annotation_path, encoding='utf-8') as f:
         target_val_lines   = f.readlines()
-    source_num_train   = len(source_train_lines)  # 8982
-    target_num_train   = len(target_train_lines)  # 20398
-    target_num_val     = len(target_val_lines)  # 20258
+    source_num_train   = len(source_train_lines)  
+    target_num_train   = len(target_train_lines) 
+    target_num_val     = len(target_val_lines)  
 
     if local_rank == 0:
         show_config(
@@ -377,11 +325,8 @@ if __name__ == "__main__":
         )
         wanted_step = 5e4 if optimizer_type == "sgd" else 1.5e4
 
-
-        # used_num_train = min(source_num_train, target_num_train)
-        # used_num_train = target_num_train
         used_num_train = source_num_train
-        total_step  = used_num_train // (Unfreeze_batch_size / 2) * UnFreeze_Epoch  # /2的意思是源域和目标域的实际batch_size大小
+        total_step  = used_num_train // (Unfreeze_batch_size / 2) * UnFreeze_Epoch 
         if total_step <= wanted_step:
             if used_num_train // Unfreeze_batch_size == 0:
                 raise ValueError('数据集过小，无法进行训练，请扩充数据集。')
@@ -390,37 +335,24 @@ if __name__ == "__main__":
             print("\033[1;33;44m[Warning] 本次运行的总训练数据量为%d，Unfreeze_batch_size为%d，共训练%d个Epoch，计算出总训练步长为%d。\033[0m"%(used_num_train, Unfreeze_batch_size, UnFreeze_Epoch, total_step))
             print("\033[1;33;44m[Warning] 由于总训练步长为%d，小于建议总步长%d，建议设置总世代为%d。\033[0m"%(total_step, wanted_step, wanted_epoch))
 
-
-
-
     #------------------------------------------------------#
     if True:
         UnFreeze_flag = False
         #------------------------------------#
         #   冻结一定部分训练
         #------------------------------------#
-        # # 冻结教师模型的参数，通过EMA更新
-        # for param in model_teacher.parameters():
-        #     param.requires_grad = False
-
         student_detection_params = []
         for key, value in model_train.named_parameters():
             student_detection_params += [value]
         teacher_detection_params = []
         for key, value in model_teacher.named_parameters():
             teacher_detection_params += [value]
-            value.requires_grad = False  # 这里设置为了False
+            value.requires_grad = False  
         teacher_alpha = 0.999
         teacher_optimizer = WeightEMA(teacher_detection_params, student_detection_params, alpha=teacher_alpha)
 
-        # for name, param in model_teacher.named_parameters():
-        #     print(f"Parameter name: {name}")
-        #     print(f"requires_grad: {param.requires_grad}")
-        #     print(f"Parameter shape: {param.shape}")
-        #     print("-" * 30) 
-
-
         batch_size = (Freeze_batch_size if Freeze_Train else Unfreeze_batch_size) // 2 
+        
         #-------------------------------------------------------------------#
         #   判断当前batch_size，自适应调整学习率
         #-------------------------------------------------------------------#
@@ -429,10 +361,10 @@ if __name__ == "__main__":
         lr_limit_min    = 3e-4 if optimizer_type == 'adam' else 5e-4
         Init_lr_fit     = min(max(batch_size / nbs * Init_lr, lr_limit_min), lr_limit_max)
         Min_lr_fit      = min(max(batch_size / nbs * Min_lr, lr_limit_min * 1e-2), lr_limit_max * 1e-2)
+        
         #---------------------------------------#
         #   根据optimizer_type选择优化器
         #---------------------------------------#
-
         pg0, pg1, pg2 = [], [], []  
         for k, v in model.named_modules():
             if hasattr(v, "bias") and isinstance(v.bias, nn.Parameter):
@@ -448,11 +380,6 @@ if __name__ == "__main__":
         optimizer.add_param_group({"params": pg2})
         optimizer.add_param_group({"params": pg0})
 
-
-        # optimizer = optim.Adam(model.parameters(), lr=0.0001)
-        # print('yes')
-
-        
         #---------------------------------------#
         #   获得学习率下降的公式
         #---------------------------------------#
@@ -513,7 +440,6 @@ if __name__ == "__main__":
 
             epoch_step_val = 1
             used_gen = zip(source_gen, target_gen)
-            # used_gen = source_gen
 
             fit_one_epoch(model_train, model, ema, yolo_loss, loss_history, eval_callback, optimizer, epoch, epoch_step, 
                         epoch_step_val, used_gen, target_gen_val, UnFreeze_Epoch, Cuda, fp16, scaler, save_period, 
