@@ -75,7 +75,7 @@ If you find this project is useful for your research, please cite:
 ```bash
 @article{LUO2026106686,
 title = {Unsupervised moving infrared small target detector adaptation by invariant and discriminative feature learning},
-journal = {Infrared Physics & Technology},
+journal = {Infrared Physics \& Technology},
 volume = {157},
 pages = {106686},
 year = {2026},
